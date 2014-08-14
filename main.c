@@ -35,17 +35,25 @@
 #define AD4_PORT	PORTC
 #define AD4_DDR		DDRC
 
-#define CLOCK_OUT_DATA 	do { 								\
-						PR_CLK_PORT |= (1 << PR_CLK_PIN); 	\
-						_delay_us(1);						\
-						PR_CLK_PORT &= ~(1 << PR_CLK_PIN); 	\
-						_delay_us(1);						\
-						} while (0)
+#define SHIFT_REGISTERS_CLOCK_DATA 								\
+							do { 								\
+							PR_CLK_PORT |= (1 << PR_CLK_PIN); 	\
+							_delay_us(1);						\
+							PR_CLK_PORT &= ~(1 << PR_CLK_PIN); 	\
+							_delay_us(1);						\
+							} while (0)
+
+#define SHIFT_REGISTERS_RESET 									\
+							do { 								\
+							PR_RES_PORT &= ~(1 << PR_RES_PIN); 	\
+							_delay_us(2);						\
+							PR_RES_PORT |= (1 << PR_RES_PIN); 	\
+							} while (0)
 
 /* Data array for shift registers */
 unsigned char LedDataReg[4];
 
-void UpdateShiftRegister(void);
+void UpdateShiftRegisters(void);
 
 
 /* UART RX Interrupt routine */
@@ -56,7 +64,7 @@ ISR(USART1_RX_vect)
 	/* debug */
 	LedDataReg[2] = buff;
 	LedDataReg[3] = 0x55;
-	UpdateShiftRegister();
+	UpdateShiftRegisters();
 	UART_SendByte(buff);
 	/* debug */
 }
@@ -73,7 +81,7 @@ inline void IO_Init(void) {
 }
 
 
-void UpdateShiftRegister(void) {
+void UpdateShiftRegisters(void) {
 	unsigned char i, out_data;
 
 	for (i = 0; i < 8; i++) {
@@ -85,7 +93,7 @@ void UpdateShiftRegister(void) {
 
 		PORTC = out_data;
 
-		CLOCK_OUT_DATA;
+		SHIFT_REGISTERS_CLOCK_DATA;
 	}
 }
 
@@ -109,7 +117,7 @@ int main(void) {
 		for (j = 1; j < 5; j++) {
 			for (i = 1; i < 9; i++) {
 				LedDataReg[j - 1] = (1 << i) - 1;
-				UpdateShiftRegister();
+				UpdateShiftRegisters();
 				_delay_ms(1000);
 			}
 		}
