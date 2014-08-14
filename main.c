@@ -8,6 +8,8 @@
 #include <avr/io.h>
 #include <stdlib.h>
 #include <util/delay.h>
+#include <avr/interrupt.h>
+#include "uart.h"
 
 #define PR_CLK_PIN	PG0
 #define PR_CLK_PORT	PORTG
@@ -43,6 +45,22 @@
 /* Data array for shift registers */
 unsigned char LedDataReg[4];
 
+void UpdateShiftRegister(void);
+
+
+/* UART RX Interrupt routine */
+ISR(USART1_RX_vect)
+{
+	unsigned char buff = UDR1;
+
+	/* debug */
+	LedDataReg[2] = buff;
+	LedDataReg[3] = 0x55;
+	UpdateShiftRegister();
+	UART_SendByte(buff);
+	/* debug */
+}
+
 
 inline void IO_Init(void) {
 	PR_CLK_DDR |= (1 << PR_CLK_PIN);
@@ -68,23 +86,18 @@ void UpdateShiftRegister(void) {
 		PORTC = out_data;
 
 		CLOCK_OUT_DATA;
-
-		/*
-		AD1_PORT &= ~(1 << AD1_PIN);
-		AD1_PORT = (1 << AD1_PIN) &             (1 << i) & LedDataReg[0]                (LedDataReg[1] >> i) & 0x01;
-	 	*/
 	}
 }
 
 
 int main(void) {
+
 	IO_Init();
-/*
-	LedDataReg[0] = 0x01;
-	LedDataReg[1] = 0x03;
-	LedDataReg[2] = 0x07;
-	LedDataReg[3] = 0x0F;
-*/
+	UART_Init(MYUBRR);
+	sei();
+
+	UART_SendString("Hello\n"); /* debug */
+
 	LedDataReg[0] = 0x00;
 	LedDataReg[1] = 0x00;
 	LedDataReg[2] = 0x00;
@@ -95,20 +108,12 @@ int main(void) {
 	while (1) {
 		for (j = 1; j < 5; j++) {
 			for (i = 1; i < 9; i++) {
-				//LedDataReg[j - 1] = i * 2 * j - 1;
-				LedDataReg[j - 1] = (2 ^ i) - 1;
+				LedDataReg[j - 1] = (1 << i) - 1;
 				UpdateShiftRegister();
 				_delay_ms(1000);
 			}
 		}
 
-/*
-		LedDataReg[0] = 0xFF;
-		LedDataReg[1] = 0xFF;
-		LedDataReg[2] = 0xFF;
-		LedDataReg[3] = 0xFF;
-		UpdateShiftRegister();
-		_delay_ms(1000);
-*/
 	}
+
 }
