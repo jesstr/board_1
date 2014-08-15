@@ -1,17 +1,17 @@
 #include "keyboard.h"
 
-//хранит текущее состояние автомата
+/* Current state of the state machine */
 unsigned char keyState;
-//хранит код нажатой кнопки
+/* Last pressed key code */
 unsigned char keyCode;
-//хранит символьное значение нажатой кнопки
+/* Last pressed key value */
 unsigned char keyValue;
-//флаговая переменная - устанавливается, если кнопка удерживается
+/* Flag, set if key is held */
 unsigned char keyDown;
-//флаговая переменная -  устанавливается, когда нажата новая кнопка
+/* Flag, set if new key is pressed */
 unsigned char keyNew;
 
-//таблица перекодировки
+/* Lookup table */
 unsigned char keyTable[][2] = {
 { 0xEE, '1'},
 { 0xED, '2'},
@@ -31,14 +31,21 @@ unsigned char keyTable[][2] = {
 { 0x77, 'D'}
 };
 
-//прототипы функций используемых автоматом
+
+/* Function returns true if any key is pressed */
 unsigned char AnyKey(void);
+/* Function returns true if the pressed key
+ * is the same as the last pressed key */
 unsigned char SameKey(void);
+/* Scan keyboard and get key code */
 void ScanKey(void);
+/* Find key value by key code, set flags */
 unsigned char FindKey(void);
+/* Clear key held flag */
 void ClearKey(void);
 
-//инициализация портов, обнуление переменных
+
+/* Keyboard initialization */
 void InitKeyboard(void)
 {
   DDRB= 0xF0;
@@ -51,8 +58,8 @@ void InitKeyboard(void)
   keyNew = 0;
 }
 
-//автомат реализующий опрос клавиатуры, защиту от дребезга
-// и распознование нажатой кнопки
+/* State machine for keyboard polling, contact bounce protection,
+ * and pressed key recognition */
 void ScanKeyboard(void)
 {
    switch (keyState){
@@ -92,7 +99,7 @@ void ScanKeyboard(void)
 
 }
 
-//возвращает true если какая-нибудь кнопка нажата
+/* Function returns true if any key is pressed */
 unsigned char AnyKey(void)
 {
   PORTB = 0x0F;
@@ -100,8 +107,8 @@ unsigned char AnyKey(void)
   return (~(0xF0 | (PINB & 0x0F)));
 }
 
-// возвращает true если удерживается та же кнопка
-//что и в предыдущем цикле опроса
+/* Function returns true if the pressed key
+ * is the same as the last pressed key */
 unsigned char SameKey(void)
 {
   PORTB = (PORTB & 0x0f) | ( keyCode & 0xf0);
@@ -109,8 +116,7 @@ unsigned char SameKey(void)
   return (!(PINB & (~keyCode)));
 }
 
-//Генерирует нужные сигналы на линиях
-//считывает код нажатой кнопки
+/* Scan keyboard and get key code */
 void ScanKey(void)
 {
   unsigned char activeRow = 0x10;
@@ -124,8 +130,7 @@ void ScanKey(void)
   }
 }
 
-// преобразует код кнопки в соответствующий символ
-// устанавивает флаги
+/* Find key value by key code, set flags */
 unsigned char FindKey(void)
 {
   unsigned char index;
@@ -140,14 +145,13 @@ unsigned char FindKey(void)
   return 0;
 }
 
-//сбрасывает флаг
+/* Clear key held flag */
 void ClearKey(void)
 {
   keyDown = 0;
 }
 
-//если зафиксировано нажатие кнопки
-//возвращает ее код
+/* Function returns key code if new key is pressed */
 unsigned char GetKey(void)
 {
   if (keyNew){

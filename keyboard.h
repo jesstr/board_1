@@ -3,13 +3,15 @@
 
 //#include <ioavr.h>
 
-//инициализация портов и внутренних переменных
+
+/* Keyboard initialization */
 void InitKeyboard(void);
 
-//сканирование клавиатуры
+/* State machine for keyboard polling, contact bounce protection,
+ * and pressed key recognition */
 void ScanKeyboard(void);
 
-//возвращает код нажатой кнопки
+/* Function returns key code if new key is pressed */
 unsigned char GetKey(void);
 
 #endif //KEYBOARD_H
