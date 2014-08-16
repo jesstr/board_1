@@ -1,8 +1,6 @@
 #ifndef KEYBOARD_H
 #define KEYBOARD_H
 
-//#include <ioavr.h>
-
 
 /* Keyboard initialization */
 void InitKeyboard(void);

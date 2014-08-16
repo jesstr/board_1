@@ -9,7 +9,10 @@
 #include <stdlib.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include "keyboard.h"
 #include "uart.h"
+
+#define nop() asm volatile("nop")
 
 #define PR_CLK_PIN	PG0
 #define PR_CLK_PORT	PORTG
@@ -38,9 +41,9 @@
 #define SHIFT_REGISTERS_CLOCK_DATA 								\
 							do { 								\
 							PR_CLK_PORT |= (1 << PR_CLK_PIN); 	\
-							_delay_us(1);						\
+							nop();						\
 							PR_CLK_PORT &= ~(1 << PR_CLK_PIN); 	\
-							_delay_us(1);						\
+							nop();					\
 							} while (0)
 
 #define SHIFT_REGISTERS_RESET 									\
@@ -102,6 +105,7 @@ int main(void) {
 
 	IO_Init();
 	UART_Init(MYUBRR);
+	InitKeyboard();
 	sei();
 
 	UART_SendString("Hello\n"); /* debug */
@@ -111,9 +115,16 @@ int main(void) {
 	LedDataReg[2] = 0x00;
 	LedDataReg[3] = 0x00;
 
-	unsigned char i,j;
+	unsigned char i, j, key;
 
 	while (1) {
+
+		ScanKeyboard();
+		if ((key = GetKey()) != 0) {
+			UART_SendByte(key);
+		}
+
+		/*
 		for (j = 1; j < 5; j++) {
 			for (i = 1; i < 9; i++) {
 				LedDataReg[j - 1] = (1 << i) - 1;
@@ -121,7 +132,7 @@ int main(void) {
 				_delay_ms(1000);
 			}
 		}
-
+		*/
 	}
 
 }
