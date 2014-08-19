@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include <string.h>
 #include "keyboard.h"
 #include "uart.h"
 
@@ -54,7 +55,12 @@
 							} while (0)
 
 /* Data array for shift registers */
-unsigned char LedDataReg[4];
+unsigned char LedDataReg[4] = {0, 0, 0, 0};
+/* */
+unsigned char new_command;
+/* */
+unsigned char uart_rx_buf;
+
 
 void UpdateShiftRegisters(void);
 
@@ -62,14 +68,8 @@ void UpdateShiftRegisters(void);
 /* UART RX Interrupt routine */
 ISR(USART1_RX_vect)
 {
-	unsigned char buff = UDR1;
-
-	/* debug */
-	LedDataReg[2] = buff;
-	LedDataReg[3] = 0x55;
-	UpdateShiftRegisters();
-	UART_SendByte(buff);
-	/* debug */
+	uart_rx_buf = UDR1;
+	new_command = 1;
 }
 
 
@@ -110,12 +110,16 @@ int main(void) {
 
 	UART_SendString("Hello\n"); /* debug */
 
-	LedDataReg[0] = 0x00;
-	LedDataReg[1] = 0x00;
-	LedDataReg[2] = 0x00;
-	LedDataReg[3] = 0x00;
-
 	unsigned char i, j, key;
+
+	/* led test */
+	for (j = 1; j < 5; j++) {
+		for (i = 1; i < 9; i++) {
+			LedDataReg[j - 1] = (1 << i) - 1;
+			UpdateShiftRegisters();
+			_delay_ms(100);
+		}
+	}
 
 	while (1) {
 
@@ -124,15 +128,33 @@ int main(void) {
 			UART_SendByte(key);
 		}
 
-		/*
-		for (j = 1; j < 5; j++) {
-			for (i = 1; i < 9; i++) {
-				LedDataReg[j - 1] = (1 << i) - 1;
-				UpdateShiftRegisters();
-				_delay_ms(1000);
+		unsigned char code;
+
+		if (new_command) {
+			switch (uart_rx_buf) {
+				case 0xC0: /* Reset all LEDs */
+					SHIFT_REGISTERS_RESET;
+					LedDataReg[0] = 0;
+					LedDataReg[1] = 0;
+					LedDataReg[2] = 0;
+					LedDataReg[3] = 0;
+					new_command = 0;
+					break;
+				case 0xCC: /* Self test */
+					UART_SendByte(0xC3);
+					new_command = 0;
+					break;
+				case 0x80 ... 0x9F: /* Switch LEDs on */
+					code = uart_rx_buf;
+					LedDataReg[(code - 0x80) / 8] |= (1 << ( (code - 0x80) % 8 ));
+					UpdateShiftRegisters();
+					new_command = 0;
+					break;
+				default:
+					break;
 			}
 		}
-		*/
+
 	}
 
 }
