@@ -87,12 +87,12 @@ inline void IO_Init(void) {
 void UpdateShiftRegisters(void) {
 	unsigned char i, out_data;
 
-	for (i = 0; i < 8; i++) {
+	for (i = 8; i > 0; i--) {
 
-		out_data = (LedDataReg[0] >> i) & 0x01;
-		out_data |= ((LedDataReg[1] >> i) & 0x01) << 1;
-		out_data |= ((LedDataReg[2] >> i) & 0x01) << 2;
-		out_data |= ((LedDataReg[3] >> i) & 0x01) << 3;
+		out_data = (LedDataReg[0] >> (i - 1)) & 0x01;
+		out_data |= ((LedDataReg[1] >> (i - 1)) & 0x01) << 1;
+		out_data |= ((LedDataReg[2] >> (i - 1)) & 0x01) << 2;
+		out_data |= ((LedDataReg[3] >> (i - 1)) & 0x01) << 3;
 
 		PORTC = out_data;
 
@@ -104,6 +104,7 @@ void UpdateShiftRegisters(void) {
 int main(void) {
 
 	IO_Init();
+	SHIFT_REGISTERS_RESET;
 	UART_Init(MYUBRR);
 	InitKeyboard();
 	sei();
