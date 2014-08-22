@@ -56,12 +56,12 @@
 
 /* Data array for shift registers */
 unsigned char LedDataReg[4] = {0, 0, 0, 0};
-/* */
+/* Flag, new UART command received */
 unsigned char new_command;
-/* */
+/* UART RX buffer */
 unsigned char uart_rx_buf;
 
-
+/*  */
 void UpdateShiftRegisters(void);
 
 
@@ -72,7 +72,7 @@ ISR(USART1_RX_vect)
 	new_command = 1;
 }
 
-
+/* IO pins initialization */
 inline void IO_Init(void) {
 	PR_CLK_DDR |= (1 << PR_CLK_PIN);
 	PR_RES_DDR |= (1 << PR_RES_PIN);
@@ -83,11 +83,11 @@ inline void IO_Init(void) {
 	AD4_DDR |= (1 << AD4_PIN);
 }
 
-
+/* */
 void UpdateShiftRegisters(void) {
 	unsigned char i, out_data;
 
-	for (i = 0; i < 8; i++) {
+	for (i = 7; i > 0; i--) {
 
 		out_data = (LedDataReg[0] >> i) & 0x01;
 		out_data |= ((LedDataReg[1] >> i) & 0x01) << 1;
@@ -100,7 +100,7 @@ void UpdateShiftRegisters(void) {
 	}
 }
 
-
+/* Main routine */
 int main(void) {
 
 	IO_Init();
