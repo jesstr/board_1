@@ -87,6 +87,8 @@ void ScanKeyboard(void)
        if (AnyKey()) {
          ScanKey();
          keyState = 1;
+         /* Contact bounce protection delay */
+         _delay_ms(50);
        }
        break;
 
