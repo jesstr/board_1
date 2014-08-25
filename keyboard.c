@@ -13,7 +13,7 @@ unsigned char keyDown;
 /* Flag, set if new key is pressed */
 unsigned char keyNew;
 
-/* Lookup table */
+/* Key value by code lookup table */
 unsigned int keyTable[][2] = {
 { 0x0FEE, 0x60},
 { 0x0FED, 0x61},

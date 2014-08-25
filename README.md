@@ -1,4 +1,9 @@
 board_1
 =======
 
-work project
+Work project.
+
+Platform: Linux
+IDE: Eclipse Helios Service Release 2 
+Compiler: GCC
+Author: Pavel Cherstvov

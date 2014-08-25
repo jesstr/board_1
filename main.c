@@ -15,6 +15,7 @@
 
 #define nop() asm volatile("nop")
 
+/* Output port and pins difinitions */
 #define PR_CLK_PIN	PG0
 #define PR_CLK_PORT	PORTG
 #define PR_CLK_DDR	DDRG
@@ -39,6 +40,7 @@
 #define AD4_PORT	PORTC
 #define AD4_DDR		DDRC
 
+/* Perform shift registers clock pulse */
 #define SHIFT_REGISTERS_CLOCK_DATA 								\
 							do { 								\
 							PR_CLK_PORT |= (1 << PR_CLK_PIN); 	\
@@ -47,6 +49,7 @@
 							nop();					\
 							} while (0)
 
+/* Perform shift registers reset pulse */
 #define SHIFT_REGISTERS_RESET 									\
 							do { 								\
 							PR_RES_PORT &= ~(1 << PR_RES_PIN); 	\
@@ -61,8 +64,12 @@ unsigned char new_command;
 /* UART RX buffer */
 unsigned char uart_rx_buf;
 
-/*  */
+/* Write (clock out) content of data array to the shift registers */
 void UpdateShiftRegisters(void);
+/* Debug leds test */
+inline void LedsTest();
+/* IO pins initialization */
+inline void IO_Init(void);
 
 
 /* UART RX Interrupt routine */
@@ -83,7 +90,7 @@ inline void IO_Init(void) {
 	AD4_DDR |= (1 << AD4_PIN);
 }
 
-/* */
+/* Write (clock out) content of data array to the shift registers */
 void UpdateShiftRegisters(void) {
 	unsigned char i, out_data;
 
@@ -100,6 +107,17 @@ void UpdateShiftRegisters(void) {
 	}
 }
 
+/* Debug leds test */
+inline void LedsTest() {
+	for (j = 1; j < 5; j++) {
+		for (i = 1; i < 9; i++) {
+			LedDataReg[j - 1] = (1 << i) - 1;
+			UpdateShiftRegisters();
+			_delay_ms(100);
+		}
+	}
+}
+
 /* Main routine */
 int main(void) {
 
@@ -113,14 +131,8 @@ int main(void) {
 
 	unsigned char i, j, key;
 
-	/* led test */
-	for (j = 1; j < 5; j++) {
-		for (i = 1; i < 9; i++) {
-			LedDataReg[j - 1] = (1 << i) - 1;
-			UpdateShiftRegisters();
-			_delay_ms(100);
-		}
-	}
+	/* debug leds test */
+	// LedsTest();
 
 	while (1) {
 
