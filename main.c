@@ -108,7 +108,9 @@ void UpdateShiftRegisters(void) {
 }
 
 /* Debug leds test */
-inline void LedsTest() {
+void LedsTest() {
+	unsigned char i, j;
+
 	for (j = 1; j < 5; j++) {
 		for (i = 1; i < 9; i++) {
 			LedDataReg[j - 1] = (1 << i) - 1;
@@ -129,7 +131,7 @@ int main(void) {
 
 	UART_SendString("Hello\n"); /* debug */
 
-	unsigned char i, j, key;
+	unsigned char key;
 
 	/* debug leds test */
 	// LedsTest();
