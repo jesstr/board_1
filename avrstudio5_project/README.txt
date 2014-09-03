@@ -1,0 +1,1 @@
+Copy all src's to the folder board_1/.
