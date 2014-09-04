@@ -122,19 +122,20 @@ void LedsTest() {
 
 /* Main routine */
 int main(void) {
-
+	
 	IO_Init();
 	SHIFT_REGISTERS_RESET;
 	UART_Init(MYUBRR);
 	InitKeyboard();
 	sei();
 
-	UART_SendString("Hello\n"); /* debug */
-
-	unsigned char key;
-
+	/* debug */
+	//UART_SendByte(0xC3
+	
 	/* debug leds test */
 	// LedsTest();
+
+	unsigned char key;
 
 	while (1) {
 
@@ -171,5 +172,4 @@ int main(void) {
 		}
 
 	}
-
 }
